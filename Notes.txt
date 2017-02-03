@@ -1,0 +1,116 @@
+To get started, you first make a personal copy of this directory.
+On a lab (Linux) machine, do the following:
+
+  cd ~cs323000/share/hw4
+  make copy
+  cd ~/cs323/hw4
+
+You only need to edit TSP.java and GeomGraph.java (see the "TODO"
+items in their comments). I have set things up so you may either use
+BlueJ (on a lab machine, or on your own machine) or you may use the
+lab command line (with various "make" commands).
+
+To run the TSP program, you need an environment where you can open a
+graphics window.  So in the lab or on your laptop should be fine, but
+it probably won't work via ssh (unless you also use "ssh -X", and you
+know how to run a local X server).
+
+To compile and run test examples from the command line, try:
+
+    make compile
+    make run10
+    make run100
+    make run1000
+    make runbier
+    etc.
+
+For a complete list of the available make commands (as defined
+by the Makefile), enter:
+
+    make
+
+On a lower level, you may also invoke the TSP program directly
+from the command line as follows:
+
+   java TSP FILENAME D
+
+Here FILENAME is the name of an input text file, like tsp8.txt (a
+set of 8 points) and D is a small integer, like 5, 10, or 20.
+
+If you are using BlueJ, instead of using the command line, you can
+invoke the same tests via these static methods in the TSP class:
+
+    run10()
+    run100()
+    run1000()
+    runbier()
+    etc.
+
+As given, TSP.java does some useful computation.   In particular it
+produces a graphic image of the initial geometric graph (G.png) and
+of its minimum spanning tree (MST.png).   But it is not finished. See
+the comments in that file, especially the "TODO" items, about the
+remaining steps to produce two "tours".  The first tour (TSP1.png)
+is the result of "shortcutting" the MST tree, and is guaranteed to
+be within a factor of 2 of the optimal tour weight.  The second tour
+(TSP2.png) is the result of applying the 2-opt heuristic to the first
+tour.  It should look nicer (no self-crossings, or almost none).
+See 2OPT.txt for more discussion about 2-opt moves.
+
+Outside TSP.java, there is one more "TODO" item in GeomGraph.java,
+a speed improvement.  As given, GeomGraph uses a simple O(N^2)
+time procedure in its constructor; it looks at all possible neighbors
+of each vertex, to find the D closest.   It works, but it is slow.
+There is a faster way to do this, using the "distance iterator" of
+the QuadTree data structure (which is provided). Once you have done
+this, you should also be able to run the larger input examples
+(like mona-20k.txt) in a more reasonable amount of time.
+        
+
+When TSP.java is done, it should print five lines to System.out:
+
+[the MST weight, this is already done]
+[the sequence of vertex ids in TSP1, probably starts with 0]
+[the weight of TSP1]
+[the sequence of vertex ids in TSP2]
+[the weight of TSP2]
+
+If you want to produce other output for your own purposes, please
+print that to System.err, so that our grading scripts don't get it
+confused with the expected output.
+
+Also, TSP.java should produce these four image files:
+
+  G.png    [black, already done]
+  MST.png  [red, already done]
+  TSP1.png [green]
+  TSP2.png [blue]
+
+For examples of such outputs (both text and images), see:
+    http://www.mathcs.emory.edu/~cs323000/share/hw4-outputs/
+
+Your output does not have to be identical to ours, since there are
+some different ways to implement the shortcutting and 2-opt.  But it
+should look similar.  In particular, there shouldn't be many edge
+crossings in your final tour.
+
+Finally, when you are finished (or you just want to stop), you need
+to turnin your work.   If you did all your work on a lab machine, you
+should just be able to do this:
+
+    make turnin
+
+If you did your work somewhere else, you will first need to copy the
+files TSP.java and GeomGraph.java to the expected directory (~/cs323/hw4)
+and then at a command line in that directory, enter:
+
+    /home/cs323000/turnin hw4
+
+
+(The "turnin" may not be working until we are closer to the duedate.)
+
+REMARKS:
+  Several textbook *.java files are included here, possibly with small
+  edits to remove dependencies, you should not edit them.
+  Some input text files are from princeton.edu or TSPLIB.
+

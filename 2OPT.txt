@@ -1,0 +1,131 @@
+Here we discuss how to do a 2-opt move.  For a more general discussion
+see http://en.wikipedia.org/wiki/2-opt
+
+In our particular situation, we have a cyclic tour on all V vertices,
+and e is an edge from our geometric graph G.  We want to consider
+adding e to the tour, using a 2-opt move.  Here we sketch out the
+steps.
+
+Let v and w be the two endpoints of e.  These vertex ids correspond
+to the two points in the plane: points[v] and points[w].
+
+I suppose your current tour is stored in a "tour" array of size V, so
+the vertex ids around the tour are tour[0], tour[1], ..., tour[V-1].
+So the first tour edge goes from points[tour[0]] to points[tour[1]],
+the second edge goes from points[tour[1]] to points[tour[2]], and so
+on.  The tour is cyclic, so the last edge wraps back around, from
+points[tour[V-1]] to points[tour[0]].
+
+First you need to find the indices i and j, positions in the tour, so
+that tour[i]==v and tour[j]==w.  (This step is fast if you keep track
+of the "inverse" map, from vertex ids back to their tour positions.)
+
+Let v'=tour[i+1] and w'=tour[j+1] (the vertices right after v and w,
+in the tour order).  If v'==w, or w'==v, then we can give up now (we
+are trying to add an edge that is already in the tour).  You should
+take both i+1 and j+1 "mod V", so they can wrap around to zero.  They
+define a second edge e'=(v',w') (it is OK if e' is not in G, the TSP
+tour does not have to contain only edges from G).  The current tour
+has edges (v,v') and (w,w'), we are considering a 2-opt move which
+would remove those two edges, and add edges e and e' in their place.
+
+The proposed 2-opt move makes the following net change in tour weight:
+
+   Add weights of e and e', subtract weights of (v,v') and (w,w').
+
+You should compute this net change in tour weight.  If it is not an
+improvement, then you do not want to do this 2-opt move.  Otherwise,
+you do want to do the 2-opt move.
+
+Instead of comparing the net change to 0, it is safer to make sure it
+is a little bit negative, like "net change < -0.000001" (or some
+similar small number).  Otherwise, because of floating-point round-off
+errors, you could get into an infinite loop, of moves that *think*
+they are always improving by a bit, but not really.
+
+To actually DO the 2-opt move, you simply need to "reverse" the vertex
+ids in half of the tour array (I suggest you modify the existing
+array, rather than creating a new one).  You can reverse the vertex
+ids from tour[i+1] to tour[j] (this may cycle around the tour array).
+Or if it is easier, you can reverse the ids from tour[j+1] to tour[i]
+(again, this may cycle around).  Either approach results in the same
+tour, just with different orientations.
+
+
+
+
+
+2 opt move
+How do we define the i and j indices in 2-opt move? Are they just random numbers?
+Why should take both i+1 and j+1 "mod V" and wrap round to zero?
+See 2OPT.txt
+Briefly: e is some edge from the geometric graph G,
+v and w are its endpoints (vertex ids, integers from 0 to V-1),
+and i and j are the positions of v and w in the current tour (indices so that tour[i]==v and tour[j]==w).
+If you like, you might swap the endpoints v and w to make sure that i<j.
+The tour is cyclic, so (for each index k) the vertex after tour[k] is tour[k+1], or it is tour[0] when k+1==V.
+
+
+how to decide on the edge we use
+For 2-opt Im confused on how to choose which edges to do the 2-opt move. Do we test each edges to see if it can be improved or is there something Im missing? Since this is a NP hard problem would we just have to tackle it brute force style? 
+Remember the geometric graph G built in "Step 2".  You keep trying 2-opt moves for edges e in G, until there are no more improving 2-opt moves.
+Since one 2-opt move can enable others, this requires multiple passes over G.  Something like this pseudocode:
+ 
+boolean again = true;
+while (again) {
+  again = false;
+  for (each edge e in G) {
+    if (e defines an improving 2-opt move in our tour) {
+      do the 2-opt move for e;
+      again = true;
+   }
+}
+ 
+Also, you mentioned NP-hard: the NP-hard problem is finding the best TSP tour.  But we are doing something easier: we are finding a tour (TSP2) which we cannot further improve by 2-opt moves.  So TSP2 is "locally optimal", but it is not necessarily globally optimal.
+ 
+reverse vertex id's
+Can anyone clarify what it means to reverse the vertex id's in the 2op optimization?
+
+
+Your current tour is an int array, an array of all V vertex ids, in some order.
+A 2-opt move is equivalent to reversing the contents in some subarray (or "subtour").
+The way I described it in 2OPT.txt, it is reversing the tour subarray from index i+1 to index j (inclusive).
+ 
+First example:
+ 
+In "make run" (input tsp5.txt), the initial TSP1 tour (at least the way I compute it) is:
+0 3 4 2 1
+That means we go from vertex (or point) 0 to vertex 3 to vertex 4 to vertex 2 to vertex 1, and finally back to vertex 0.
+My 2-opt routine chooses to reverse the "0 3" part (the subarray from index 0 to index  1, inclusive).
+The result, after that reversal, is:
+3 0 4 2 1
+Now the tour goes from 3 to 0 to 4 to 2 to 1, and back to 3.
+Notice it lost edges 3-4 and 1-0 (which were crossing), and it gained the edges 0-4 and 1-3.
+For this example that is the only 2-opt move necessary, and that is my TSP2 output.
+ 
+Instead of reversing the "3 0" subarray, an equivalent move would have been to reverse the rest of the array, the "4 2 1" part (the subarray from index 2 to index 4).
+That would have given us this sequence:
+0 3 1 2 4
+That looks different, but it is exactly the same set of edges (same picture).  It is the same cyclic tour as the previous sequence, but traversed in the opposite direction.
+ 
+Second example:
+ 
+In "make run10" (input tsp10.txt) my initial TSP1 tour is the following:
+0 1 5 2 6 4 7 3 9 8
+My 2-opt code first chooses to reverse the subarray from index 3 to index 6, inclusive (the "2 6 4 7" part).  (Your code could choose some other 2-opt move first,  this is just an example.)  After the reversal, the tour is:
+0 1 5 7 4 6 2 3 9 8
+(This is not the final TSP2 output, several more reversals need to follow.)
+ 
+Instead of reversing the "2 6 4 7" part, an equivalent move would be to reverse the "subarray" from index 7 to index 2 (wrapping around with contents "3 9 8 0 1 5").  If we had done that reversal instead, the result would be this:
+8 9 3 2 6 4 7 5 1 0
+Again this looks different, but it is in fact the same set of edges as the previous sequence, traversed in the opposite direction.
+ 
+ 
+In general whenever you have a reversal to do (say from index K to index L), it is equivalent to reversing the complement (the rest of the tour. from index L+1 to index K-1).  So you can avoid doing a wrapped-around reversal, if that is hard to think about.
+  
+ 
+ 
+
+
+
+
